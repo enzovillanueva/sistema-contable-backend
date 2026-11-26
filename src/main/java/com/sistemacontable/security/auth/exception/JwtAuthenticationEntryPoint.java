@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.Map;
+import com.sistemacontable.shared.exception.ApiErrors;
+import org.springframework.http.HttpStatus;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -23,12 +24,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(@NonNull HttpServletRequest request,
                          @NonNull HttpServletResponse response,
                          @NonNull AuthenticationException exception) throws IOException {
-        response.setStatus(401);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        objectMapper.writeValue(response.getWriter(), Map.of(
-                "status", 401,
-                "message", "Autenticación requerida"
-        ));
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        ApiErrors.write(response, objectMapper, ApiErrors.create(status, ApiErrors.code(status),
+                ApiErrors.detail(status), request.getRequestURI()));
     }
 }

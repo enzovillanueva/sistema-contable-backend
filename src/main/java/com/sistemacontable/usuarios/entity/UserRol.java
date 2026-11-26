@@ -1,13 +1,16 @@
 package com.sistemacontable.usuarios.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Data
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users_roles", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "role_id"})
 })
@@ -22,8 +25,13 @@ public class UserRol {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Rol rol;
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public UserRol(User user, Rol rol) {
+        this.user = Objects.requireNonNull(user, "user");
+        this.rol = Objects.requireNonNull(rol, "rol");
+    }
 
     @PrePersist
     protected void onCreate() {

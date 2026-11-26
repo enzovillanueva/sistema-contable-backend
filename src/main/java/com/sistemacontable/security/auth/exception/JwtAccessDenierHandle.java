@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.Map;
+import com.sistemacontable.shared.exception.ApiErrors;
+import org.springframework.http.HttpStatus;
 
 @Component
 public class JwtAccessDenierHandle implements AccessDeniedHandler {
@@ -23,12 +24,8 @@ public class JwtAccessDenierHandle implements AccessDeniedHandler {
     public void handle(@NonNull HttpServletRequest request,
                          @NonNull HttpServletResponse response,
                          @NonNull AccessDeniedException exception) throws IOException {
-        response.setStatus(403);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        objectMapper.writeValue(response.getWriter(), Map.of(
-                "status", 403,
-                "message", "No tenés permisos para acceder a este recurso"
-        ));
+        HttpStatus status = HttpStatus.FORBIDDEN;
+        ApiErrors.write(response, objectMapper, ApiErrors.create(status, ApiErrors.code(status),
+                ApiErrors.detail(status), request.getRequestURI()));
     }
 }

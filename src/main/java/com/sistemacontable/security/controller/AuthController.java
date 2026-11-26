@@ -29,18 +29,27 @@ public class AuthController {
     public ResponseEntity<UserResponseDto> login(
             @RequestBody LoginRequestDto request,
             HttpServletResponse response
-    ){
+    ) {
         Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+                new UsernamePasswordAuthenticationToken(
+                        request.username(),
+                        request.password()
+                )
         );
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        if (!(auth.getPrincipal() instanceof UserDetailsImpl userDetails)) {
+            throw new IllegalStateException(
+                    "El principal autenticado no es del tipo esperado"
+            );
+        }
+
         Long userId = userDetails.getId();
+        userService.recordLogin(userId);
+        UserResponseDto userResponseDto = userService.getUserById(userId);
 
         String token = JwtUtils.generateToken(userId);
         JwtUtils.addTokenToCookie(response, token);
 
-        UserResponseDto userResponseDto = userService.getUserById(userId);
         return ResponseEntity.ok(userResponseDto);
     }
 
